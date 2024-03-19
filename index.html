@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Emulator</title>
+    <style>
+        /* Basic styling for the terminal interface */
+        body {
+            font-family: monospace;
+        }
+        #terminal {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div id="terminal">
+        <pre id="output"></pre>
+        <input type="text" id="command" placeholder="Enter a command">
+    </div>
+
+    <script>
+        const outputElement = document.getElementById('output');
+        const commandInput = document.getElementById('command');
+
+        // Event listener for user input
+        commandInput.addEventListener('keydown', async (event) => {
+            if (event.key === 'Enter') {
+                const command = commandInput.value.trim();
+                if (command) {
+                    try {
+                        const response = await executeCommand(command);
+                        displayOutput(response);
+                    } catch (error) {
+                        displayOutput(`Error: ${error.message}`);
+                    }
+                    commandInput.value = '';
+                }
+            }
+        });
+
+        // Execute shell command on the server
+        async function executeCommand(command) {
+            try {
+                const response = await fetch('/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command }),
+                });
+                const data = await response.json();
+                return data.output;
+            } catch (error) {
+                throw new Error('Failed to execute command');
+            }
+        }
+
+        // Display output in the terminal
+        function displayOutput(text) {
+            outputElement.textContent += `\n${text}`;
+        }
+    </script>
+</body>
+</html>
